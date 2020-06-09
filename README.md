@@ -94,6 +94,8 @@ We have plugin drivers for different OSD notification implementations -  current
 be to show the notification as a full-screen webpage (so we get CSS animations etc.), but
 that's still TODO.
 
+![](docs/osd-notification.png)
+
 
 Credits
 -------
