@@ -135,6 +135,15 @@ func runOneScreen(
 	logl *logex.Leveled,
 	logger *log.Logger,
 ) error {
+	// need to run different screens as separate users. it's not only good for security to
+	// keep them separate, but also apps like Firefox don't act nice when same user in two
+	// different display sessions try to run it (Firefox by default tries to run new tab
+	// if user already has Firefox process running)..
+	//
+	// why not just run separate containers then? sure you could, but if you have multiple
+	// screens, you then have many different server endpoints when you want to send OSD
+	// notifications or script things.
+	// 
 	// 1000 = user1, 1001 = user2, .. (TODO: it's dirty to rely on this..)
 	uid := 1000 + screen.XScreenNumber - 1
 	gid := 1000 // alpine
