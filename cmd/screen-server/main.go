@@ -143,7 +143,7 @@ func runOneScreen(
 	// why not just run separate containers then? sure you could, but if you have multiple
 	// screens, you then have many different server endpoints when you want to send OSD
 	// notifications or script things.
-	// 
+	//
 	// 1000 = user1, 1001 = user2, .. (TODO: it's dirty to rely on this..)
 	uid := 1000 + screen.XScreenNumber - 1
 	gid := 1000 // alpine
