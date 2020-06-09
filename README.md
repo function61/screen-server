@@ -1,8 +1,8 @@
 ![Build status](https://github.com/function61/screen-server/workflows/Build/badge.svg)
 [![Download](https://img.shields.io/docker/pulls/fn61/screen-server.svg?style=for-the-badge)](https://hub.docker.com/r/fn61/screen-server/)
 
-Minimal VNC-servable desktop environment with a web browser running in a Alpine Linux
-Docker container, for displaying a webpage on an untrusted device like an old Android tablet.
+Minimal VNC-servable desktop environment with a web browser running in an Alpine Linux
+Docker container, for displaying a webpage on an untrusted device (like an old Android tablet).
 
 Nice added benefit is that you can connect to the same screen simultaneously from other
 devices like PCs as well, and if scripting is needed (show content X on screen Y), it's
@@ -37,7 +37,7 @@ What's special about this image
 - Supports multiple screens (ran as separate users) with different resolutions
 - OSD notifications, OSD API for sending messages to screens over the network
 - Web UI w/ screen previews
-- Small size (for an image with desktop environment and a web browser)
+- Image size, 330 MB, is small (for an image with a desktop environment and a web browser)
 
 
 How to run
@@ -52,7 +52,7 @@ $ docker run -d \
 	fn61/screen-server:TAG
 ```
 
-The format for the `SCREEN_1` parameter is VNC port, display width, height, screen name
+The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,<screen name>`
 (web UI shows this, some VNC clients show this)
 
 If you have more than one screen, just add `SCREEN_2` and so on..
@@ -70,7 +70,7 @@ all state gets lost.
 Web UI
 ------
 
-It shows you the preview on what's all the screens.
+It shows you the preview of what's on all the screens.
 
 ![](docs/web-ui.png)
 
