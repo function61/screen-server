@@ -67,6 +67,16 @@ versions of this image gets released. When you spin up a new container with the 
 all state gets lost.
 
 
+Web UI
+------
+
+It shows you the preview on what's all the screens.
+
+![](docs/web-ui.png)
+
+TODO: maybe add [noVNC](https://github.com/novnc/noVNC).
+
+
 Sending OSD notifications
 -------------------------
 
@@ -83,16 +93,6 @@ We have plugin drivers for different OSD notification implementations -  current
 [zenity](https://en.wikipedia.org/wiki/Zenity), which is not pretty. A prettier way could
 be to show the notification as a full-screen webpage (so we get CSS animations etc.), but
 that's still TODO.
-
-
-Web UI
-------
-
-It shows you the preview on what's all the screens.
-
-![](docs/web-ui.png)
-
-TODO: maybe add [noVNC](https://github.com/novnc/noVNC).
 
 
 Credits
