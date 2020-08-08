@@ -105,6 +105,10 @@ func runServer(ctx context.Context, handler http.Handler, logger *log.Logger) er
 }
 
 func screenshotWithScrot(disp string, output io.Writer) error {
+	// /dev/stdout because it otherwise doesn't support writing to stdout
+	//
+	// --overwrite because Scrot checks if path exists, and if it does, it creates
+	// <path>_00<n> so we'd end up with /dev/stdout_001 etc.. don't ask me how I know..
 	scrot := exec.Command("scrot", "--overwrite", "/dev/stdout")
 	scrot.Stdout = output
 	scrot.Env = append(scrot.Env, "DISPLAY="+disp)
