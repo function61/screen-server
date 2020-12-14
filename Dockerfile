@@ -1,19 +1,6 @@
-FROM alpine:latest
+FROM ubuntu:latest
 
-# - dbus and ttf-freefont dependencies of Firefox
-# - zenity for OSD notifications
-# - scrot for screenshots
-RUN addgroup alpine && apk add --update \
-	xvfb \
-	openbox \
-	xfce4-terminal \
-	x11vnc \
-	dbus \
-	ttf-freefont \
-	ca-certificates \
-	firefox-esr \
-	scrot \
-	zenity
+RUN apt update && apt install -y xvfb openbox xfce4-terminal x11vnc dbus ca-certificates firefox
 
 ADD misc/menu.xml /etc/xdg/openbox/
 

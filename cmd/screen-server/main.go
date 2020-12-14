@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/function61/gokit/dynversion"
+	"github.com/function61/gokit/fileexists"
 	"github.com/function61/gokit/logex"
 	"github.com/function61/gokit/osutil"
 	"github.com/function61/gokit/taskrunner"
@@ -225,25 +226,40 @@ func runOneScreen(
 }
 
 func createUserIfNotExists(screen Screen) error {
-	_, err := os.Stat(screen.Homedir())
-	if err == nil {
-		return nil
+	homeDirExists, err := fileexists.Exists(screen.Homedir())
+	if err != nil {
+		return err
 	}
 
-	if !os.IsNotExist(err) {
-		return err // some other error
+	if homeDirExists {
+		return nil
 	}
 
 	// was is not exist => user does not exist => create
 	log.Printf("setting up user %s", screen.Username())
 
-	return exec.Command(
-		"adduser",
-		"-G", "alpine",
-		"-s", "/bin/sh",
-		"-D", // don't assign a password
-		screen.Username(),
-	).Run()
+	// unfortunately, syntax of "$ adduser" is different for Debian/Alpine
+	isAlpine, err := fileexists.Exists("/etc/alpine-release")
+	if err != nil {
+		return err
+	}
+
+	if isAlpine {
+		return exec.Command(
+			"adduser",
+			"-G", "alpine",
+			"-s", "/bin/sh",
+			"-D", // don't assign a password
+			screen.Username(),
+		).Run()
+	} else {
+		return exec.Command(
+			"adduser",
+			"--disabled-password",
+			"--disabled-login",
+			screen.Username(),
+		).Run()
+	}
 }
 
 var screenOptsParseRe = regexp.MustCompile("^([^,]+),([^,]+),([^,]+),([^,]+)$")
