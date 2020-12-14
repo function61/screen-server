@@ -1,6 +1,13 @@
 FROM ubuntu:latest
 
-RUN apt update && apt install -y xvfb openbox xfce4-terminal x11vnc dbus ca-certificates firefox
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+	xvfb \
+	x11vnc \
+	openbox \
+	xfce4-terminal \
+	dbus \
+	ca-certificates \
+	firefox
 
 ADD misc/menu.xml /etc/xdg/openbox/
 
