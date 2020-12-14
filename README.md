@@ -48,6 +48,7 @@ $ docker run -d \
 	--name screen-server \
 	-p 5900:5900 \
 	-p 80:80 \
+	--shm-size 512m \
 	-e "SCREEN_1=5900,800,1280,Galaxy Tab 2" \
 	fn61/screen-server:TAG
 ```
@@ -56,6 +57,9 @@ The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,
 (web UI shows this, some VNC clients show this)
 
 If you have more than one screen, just add `SCREEN_2` and so on..
+
+NOTE: `--shm-size` is important - with too small value Firefox & Chromium crash with more
+websites (or >= 1 tab).
 
 
 Note about state
