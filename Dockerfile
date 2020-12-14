@@ -10,6 +10,7 @@ RUN addgroup alpine && apk add --update \
 	x11vnc \
 	dbus \
 	ttf-freefont \
+	ca-certificates \
 	firefox-esr \
 	scrot \
 	zenity
