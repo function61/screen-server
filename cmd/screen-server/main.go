@@ -17,6 +17,7 @@ import (
 	"github.com/function61/gokit/logex"
 	"github.com/function61/gokit/osutil"
 	"github.com/function61/gokit/taskrunner"
+	"github.com/function61/screen-server/pkg/evdev"
 	"github.com/spf13/cobra"
 )
 
@@ -44,10 +45,11 @@ func main() {
 }
 
 type screenOptions struct {
-	Description string
-	width       int
-	height      int
-	vncPort     int
+	Description       string
+	width             int
+	height            int
+	vncPort           int
+	AttachInputDevice string
 }
 
 type Screen struct {
@@ -166,6 +168,38 @@ func runOneScreen(
 	}()
 
 	processes := taskrunner.New(ctx, logger)
+
+	if screen.Opts.AttachInputDevice != "" {
+		exists, err := fileexists.Exists(screen.Opts.AttachInputDevice)
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			return fmt.Errorf(
+				"Input-device-to-attach '%s' doesn't exist",
+				screen.Opts.AttachInputDevice)
+		}
+
+		// this channel will receive input from the input device that we'll start scanning
+		input := evdev.NewChan()
+
+		processes.Start("evdev", func(ctx context.Context) error {
+			// grabbed = input will only be processed by us
+			return evdev.ScanInputGrabbed(ctx, screen.Opts.AttachInputDevice, input)
+		})
+
+		processes.Start("x11-input-forwarder", func(ctx context.Context) error {
+			<-xvfbReady
+
+			return deliverInputEventsToX(
+				ctx,
+				input,
+				screen.XScreenNumberWithColon(),
+				logex.Prefix("x11-input-forwarder", logger))
+		})
+	}
+
 	processes.Start("Xvfb", func(ctx context.Context) error {
 		// this serves as a virtual display
 		xvfb := exec.CommandContext(
@@ -262,7 +296,7 @@ func createUserIfNotExists(screen Screen) error {
 	}
 }
 
-var screenOptsParseRe = regexp.MustCompile("^([^,]+),([^,]+),([^,]+),([^,]+)$")
+var screenOptsParseRe = regexp.MustCompile("^([^,]+),([^,]+),([^,]+),([^,]+)(?:,([^,]+))?$")
 
 func parseScreenOpts(serialized string) (*screenOptions, error) {
 	screenDefParts := screenOptsParseRe.FindStringSubmatch(serialized)
@@ -286,9 +320,10 @@ func parseScreenOpts(serialized string) (*screenOptions, error) {
 	}
 
 	return &screenOptions{
-		vncPort:     vncPort,
-		width:       width,
-		height:      height,
-		Description: screenDefParts[4],
+		vncPort:           vncPort,
+		width:             width,
+		height:            height,
+		Description:       screenDefParts[4],
+		AttachInputDevice: screenDefParts[5],
 	}, nil
 }
