@@ -21,6 +21,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	instructionsUrl = "https://github.com/function61/screen-server"
+)
+
 func main() {
 	app := &cobra.Command{
 		Use:     os.Args[0],
@@ -114,6 +118,12 @@ func run(ctx context.Context, logger *log.Logger) error {
 
 	// each screen task encapsulates three processes: Xvfb, x11vnc and openbox
 	screenTasks := taskrunner.New(ctx, logger)
+
+	if len(screens) == 0 {
+		return fmt.Errorf(
+			"Define at least one screen (configuration error)\nInstructions: %s",
+			instructionsUrl)
+	}
 
 	for _, screen := range screens {
 		screen := screen // pin
