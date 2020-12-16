@@ -23,8 +23,8 @@ const (
 	ButtonRelease = 5
 	MotionNotify  = 6
 
-	KeyPressMask   = 1 << 0
-	KeyReleaseMask = 1 << 1
+	// KeyPressMask   = 1 << 0
+	// KeyReleaseMask = 1 << 1
 
 	mouseLeft      = 1
 	mouseMiddle    = 2

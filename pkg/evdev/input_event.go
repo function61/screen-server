@@ -2,6 +2,7 @@ package evdev
 
 import (
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -53,6 +54,11 @@ type InputEvent struct {
 	Type  EventType
 	Code  uint16
 	Value int32 // 1=press, 0=release
+}
+
+func (i *InputEvent) TimevalToTime() time.Time {
+	sec, nsec := i.Time.Unix()
+	return time.Unix(sec, nsec)
 }
 
 // KeyString returns representation of pressed key as string

@@ -7,8 +7,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"syscall"
-	"time"
 
 	"golang.org/x/sys/unix"
 )
@@ -86,10 +84,6 @@ func scanInput(ctx context.Context, inputDevicePath string, ch chan InputEvent, 
 	}
 }
 
-func isRoot() bool {
-	return syscall.Getuid() == 0 && syscall.Geteuid() == 0
-}
-
 func readOneInputEvent(inputDevice *os.File) (*InputEvent, error) {
 	buffer := make([]byte, eventsize)
 	n, err := inputDevice.Read(buffer)
@@ -115,9 +109,4 @@ func eventFromBuffer(buffer []byte) (*InputEvent, error) {
 	event := &InputEvent{}
 	err := binary.Read(bytes.NewBuffer(buffer), binary.LittleEndian, event)
 	return event, err
-}
-
-func timevalToTime(tv syscall.Timeval) time.Time {
-	sec, nsec := tv.Unix()
-	return time.Unix(sec, nsec)
 }
