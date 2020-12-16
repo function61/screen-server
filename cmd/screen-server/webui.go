@@ -3,10 +3,8 @@ package main
 import (
 	"context"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
-	"os/exec"
 	"strconv"
 
 	"github.com/function61/gokit/net/http/httputils"
@@ -33,7 +31,7 @@ var ui, _ = template.New("_").Parse(`<!doctype html>
 </html>
 `)
 
-func newServerHandler(screens []Screen) http.Handler {
+func newServerHandler(screens []*Screen) http.Handler {
 	routes := mux.NewRouter()
 
 	routes.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +59,7 @@ func newServerHandler(screens []Screen) http.Handler {
 			return
 		}
 
-		go showOsdMessage(context.Background(), *screen, string(msg))
+		go showOsdMessage(context.Background(), screen, string(msg))
 	})
 
 	routes.HandleFunc("/api/screen/{id}/screenshot", func(w http.ResponseWriter, r *http.Request) {
@@ -78,9 +76,7 @@ func newServerHandler(screens []Screen) http.Handler {
 		}
 
 		w.Header().Set("Content-Type", "image/png")
-		if err := screenshotWithScrot(screen.XScreenNumberWithColon(), w); err != nil {
-			log.Printf("screenshotWithScrot: %v", err)
-		}
+		logIfError("screenshot", screen.Screenshot(w))
 	})
 
 	return routes
@@ -95,28 +91,16 @@ func runServer(ctx context.Context, handler http.Handler, logger *log.Logger) er
 	return httputils.CancelableServer(ctx, srv, func() error { return srv.ListenAndServe() })
 }
 
-func screenshotWithScrot(disp string, output io.Writer) error {
-	// /dev/stdout because it otherwise doesn't support writing to stdout
-	//
-	// --overwrite because Scrot checks if path exists, and if it does, it creates
-	// <path>_00<n> so we'd end up with /dev/stdout_001 etc.. don't ask me how I know..
-	scrot := exec.Command("scrot", "--overwrite", "/dev/stdout")
-	scrot.Stdout = output
-	scrot.Env = append(scrot.Env, "DISPLAY="+disp)
-
-	return scrot.Run()
-}
-
 func logIfError(origin string, err error) {
 	if err != nil {
 		log.Printf("%s: %v", origin, err)
 	}
 }
 
-func screenById(id int, screens []Screen) *Screen {
+func screenById(id int, screens []*Screen) *Screen {
 	for _, screen := range screens {
 		if screen.Id == id {
-			return &screen
+			return screen
 		}
 	}
 

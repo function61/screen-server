@@ -9,9 +9,11 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/xgbutil"
 	"github.com/function61/gokit/dynversion"
 	"github.com/function61/gokit/log/logex"
 	"github.com/function61/gokit/os/osutil"
@@ -60,6 +62,8 @@ type Screen struct {
 	XScreenNumber int
 	Opts          screenOptions
 	Osd           OsdDriver
+	xUtilConn     *xgbutil.XUtil
+	xUtilConnMu   sync.Mutex
 }
 
 // each screen runs as its own user
@@ -99,9 +103,9 @@ func run(ctx context.Context, logger *log.Logger) error {
 	// var osdDriver OsdDriver = &firefoxOsdDriver{}
 	var osdDriver OsdDriver = &zenityOsdDriver{}
 
-	screens := []Screen{}
+	screens := []*Screen{}
 	for idx, opts := range optss {
-		screen := Screen{
+		screen := &Screen{
 			Id:            idx + 1, // 1,2,3...
 			XScreenNumber: idx + 1, // 1,2,3...
 			Opts:          opts,
@@ -143,7 +147,7 @@ func run(ctx context.Context, logger *log.Logger) error {
 
 func runOneScreen(
 	ctx context.Context,
-	screen Screen,
+	screen *Screen,
 	logl *logex.Leveled,
 	logger *log.Logger,
 ) error {

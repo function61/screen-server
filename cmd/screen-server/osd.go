@@ -13,10 +13,10 @@ import (
 // OSD (On-Screen Display - supports showing messages on the screens) drivers
 
 type OsdDriver interface {
-	DisplayMessage(ctx context.Context, screen Screen, message string) error
+	DisplayMessage(ctx context.Context, screen *Screen, message string) error
 }
 
-func showOsdMessage(ctx context.Context, screen Screen, message string) {
+func showOsdMessage(ctx context.Context, screen *Screen, message string) {
 	// default: show the message for <timeout> seconds
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -26,7 +26,7 @@ func showOsdMessage(ctx context.Context, screen Screen, message string) {
 
 type zenityOsdDriver struct{}
 
-func (f *zenityOsdDriver) DisplayMessage(ctx context.Context, screen Screen, message string) error {
+func (f *zenityOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, message string) error {
 	zenity := exec.CommandContext(
 		ctx,
 		"zenity",
@@ -40,7 +40,7 @@ func (f *zenityOsdDriver) DisplayMessage(ctx context.Context, screen Screen, mes
 //nolint:unused
 type firefoxOsdDriver struct{}
 
-func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen Screen, message string) error {
+func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, message string) error {
 	html := f.makeHtml(string(message))
 
 	// TODO: this is not concurrency safe at all

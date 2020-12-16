@@ -10,7 +10,7 @@ import (
 // each screen has its own Unix user. Firefox proved to be problematic if trying to be ran from two
 // different X sessions with same user, and dicking around with Firefox profiles would've been harder
 // than actually using separate users
-func createUserIfNotExists(screen Screen) error {
+func createUserIfNotExists(screen *Screen) error {
 	homeDirExists, err := osutil.Exists(screen.Homedir())
 	if err != nil {
 		return err
