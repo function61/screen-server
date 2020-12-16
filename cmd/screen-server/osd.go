@@ -43,11 +43,13 @@ type firefoxOsdDriver struct{}
 func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen Screen, message string) error {
 	html := f.makeHtml(string(message))
 
-	// TODO: this is not thread safe
+	// TODO: this is not concurrency safe at all
 	osdHtmlFilename := "/tmp/osd.html"
-	defer os.Remove(osdHtmlFilename)
 
-	_ = ioutil.WriteFile(osdHtmlFilename, []byte(html), 0600)
+	if err := ioutil.WriteFile(osdHtmlFilename, []byte(html), 0600); err != nil {
+		return err
+	}
+	defer os.Remove(osdHtmlFilename)
 
 	firefox := exec.CommandContext(
 		ctx,
