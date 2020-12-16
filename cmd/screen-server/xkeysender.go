@@ -51,8 +51,12 @@ func deliverInputEventsToX(
 	logl := logex.Levels(logger)
 
 	// FIXME: not strictly safe/semantic at all if this function is called multiple times
+	// FIXME: due to this we get "A read error is unrecoverable: EOF" that seem to be originating from
+	//        this code, even though it is not. Global state..
 	xgb.Logger = logger
 
+	// TODO: use screen.getXConn(), but we've to implement centralized per-screen X connection
+	//       teardown logic (+ maybe xevent.Main?) first
 	xUtil, err := xgbutil.NewConnDisplay(display)
 	if err != nil {
 		return err
@@ -60,6 +64,7 @@ func deliverInputEventsToX(
 	xConn := xUtil.Conn()
 	// both close types (a) xConn.Close) b) xevent.Quit() ) yield panics :(
 
+	// not sure if this is required
 	go xevent.Main(xUtil)
 
 	if err := xtest.Init(xConn); err != nil {
