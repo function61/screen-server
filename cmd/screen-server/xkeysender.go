@@ -9,7 +9,7 @@ import (
 	"github.com/BurntSushi/xgb/xtest"
 	"github.com/BurntSushi/xgbutil"
 	"github.com/BurntSushi/xgbutil/xevent"
-	"github.com/function61/gokit/logex"
+	"github.com/function61/gokit/log/logex"
 	"github.com/function61/screen-server/pkg/evdev"
 )
 

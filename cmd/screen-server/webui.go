@@ -9,8 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/function61/gokit/httputils"
-	"github.com/function61/gokit/taskrunner"
+	"github.com/function61/gokit/net/http/httputils"
 	"github.com/gorilla/mux"
 )
 
@@ -93,15 +92,7 @@ func runServer(ctx context.Context, handler http.Handler, logger *log.Logger) er
 		Handler: handler,
 	}
 
-	tasks := taskrunner.New(ctx, logger)
-
-	tasks.Start("listener "+srv.Addr, func(_ context.Context) error {
-		return httputils.RemoveGracefulServerClosedError(srv.ListenAndServe())
-	})
-
-	tasks.Start("listenershutdowner", httputils.ServerShutdownTask(srv))
-
-	return tasks.Wait()
+	return httputils.CancelableServer(ctx, srv, func() error { return srv.ListenAndServe() })
 }
 
 func screenshotWithScrot(disp string, output io.Writer) error {

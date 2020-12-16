@@ -13,10 +13,9 @@ import (
 	"time"
 
 	"github.com/function61/gokit/dynversion"
-	"github.com/function61/gokit/fileexists"
-	"github.com/function61/gokit/logex"
-	"github.com/function61/gokit/osutil"
-	"github.com/function61/gokit/taskrunner"
+	"github.com/function61/gokit/log/logex"
+	"github.com/function61/gokit/os/osutil"
+	"github.com/function61/gokit/sync/taskrunner"
 	"github.com/function61/screen-server/pkg/evdev"
 	"github.com/spf13/cobra"
 )
@@ -180,7 +179,7 @@ func runOneScreen(
 	processes := taskrunner.New(ctx, logger)
 
 	if screen.Opts.AttachInputDevice != "" {
-		exists, err := fileexists.Exists(screen.Opts.AttachInputDevice)
+		exists, err := osutil.Exists(screen.Opts.AttachInputDevice)
 		if err != nil {
 			return err
 		}
@@ -270,7 +269,7 @@ func runOneScreen(
 }
 
 func createUserIfNotExists(screen Screen) error {
-	homeDirExists, err := fileexists.Exists(screen.Homedir())
+	homeDirExists, err := osutil.Exists(screen.Homedir())
 	if err != nil {
 		return err
 	}
@@ -283,7 +282,7 @@ func createUserIfNotExists(screen Screen) error {
 	log.Printf("setting up user %s", screen.Username())
 
 	// unfortunately, syntax of "$ adduser" is different for Debian/Alpine
-	isAlpine, err := fileexists.Exists("/etc/alpine-release")
+	isAlpine, err := osutil.Exists("/etc/alpine-release")
 	if err != nil {
 		return err
 	}
