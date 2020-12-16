@@ -268,43 +268,6 @@ func runOneScreen(
 	return processes.Wait()
 }
 
-func createUserIfNotExists(screen Screen) error {
-	homeDirExists, err := osutil.Exists(screen.Homedir())
-	if err != nil {
-		return err
-	}
-
-	if homeDirExists {
-		return nil
-	}
-
-	// was is not exist => user does not exist => create
-	log.Printf("setting up user %s", screen.Username())
-
-	// unfortunately, syntax of "$ adduser" is different for Debian/Alpine
-	isAlpine, err := osutil.Exists("/etc/alpine-release")
-	if err != nil {
-		return err
-	}
-
-	if isAlpine {
-		return exec.Command(
-			"adduser",
-			"-G", "alpine",
-			"-s", "/bin/sh",
-			"-D", // don't assign a password
-			screen.Username(),
-		).Run()
-	} else {
-		return exec.Command(
-			"adduser",
-			"--disabled-password",
-			"--disabled-login",
-			screen.Username(),
-		).Run()
-	}
-}
-
 var screenOptsParseRe = regexp.MustCompile("^([^,]+),([^,]+),([^,]+),([^,]+)(?:,([^,]+))?$")
 
 func parseScreenOpts(serialized string) (*screenOptions, error) {
