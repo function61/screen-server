@@ -60,7 +60,8 @@ $ docker run -d \
 ```
 
 The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,<screen name>,[<input device>]`
-(web UI shows this, some VNC clients show this)
+
+Why screen name? It's good if you have many screens. Web UI & some VNC clients show it.
 
 You can optionally add **physical input devices** like a keyboard-mouse to a screen. There's a
 separate README section for it.

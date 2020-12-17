@@ -137,7 +137,7 @@ func run(ctx context.Context, logger *log.Logger) error {
 	}
 
 	screenTasks.Start("webui", func(ctx context.Context) error {
-		handler := newServerHandler(screens)
+		handler := newServerHandler(screens, logex.Prefix("webui", logger))
 
 		return runServer(ctx, handler, logger)
 	})
