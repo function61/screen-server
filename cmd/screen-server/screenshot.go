@@ -17,7 +17,7 @@ func (s *Screen) Screenshot(output io.Writer) error {
 	}
 
 	// root window automatically includes all child windows. background can end up as transparent,
-	// but it doesn't matter
+	// (in VNC it shows up as black) but maybe it's not a big deal
 	screenshot, err := xgraphics.NewDrawable(X, xproto.Drawable(X.RootWin()))
 	if err != nil {
 		return err

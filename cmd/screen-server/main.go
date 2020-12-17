@@ -235,11 +235,11 @@ func runOneScreen(
 			"-display", screen.XScreenNumberWithColon(),
 			"-rfbport", strconv.Itoa(screen.Opts.vncPort),
 			"-forever", // without this the process exits after first disconnect, WTF why
-			"-xkb",
+			"-xkb",     // use XKEYBOARD extension (improved keymapping)
 			"-noxrecord",
 			"-noxfixes",
 			// "-noxdamage", // TODO: why was this optimization turned off?
-			"-nopw",
+			"-nopw",                             // don't display warning of serving VNC without password
 			"-desktop", screen.Opts.Description, // VNC viewer might show this (TightVNC on Windows does)
 			"-wait", "5", // screen poll [ms]
 			"-shared", // allow simultaneous connections to this same display
@@ -279,7 +279,7 @@ var screenOptsParseRe = regexp.MustCompile("^([^,]+),([^,]+),([^,]+),([^,]+)(?:,
 func parseScreenOpts(serialized string) (*screenOptions, error) {
 	screenDefParts := screenOptsParseRe.FindStringSubmatch(serialized)
 	if screenDefParts == nil {
-		return nil, errors.New("does not match format VNCPORT,WIDTH,HEIGHT,NAME")
+		return nil, errors.New("does not match format VNCPORT,WIDTH,HEIGHT,NAME,[INPUT_DEVICE]")
 	}
 
 	vncPort, err := strconv.Atoi(screenDefParts[1])
