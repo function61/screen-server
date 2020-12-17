@@ -51,8 +51,17 @@ func deliverInputEventsToX(
 		case <-ctx.Done():
 			return nil
 		case e := <-input:
+			// Xvfb doesn't support itself reading input from evdev (like X.org does), so we've to
+			// write the piping code ourselves. Easiest is to use XTEST "fake input", since with that
+			// we don't have to keep track of active window to know which window to send input to.
+			//
+			// For more info: https://joonas.fi/2020/12/attach-a-keyboard-to-a-docker-container/
+
+			// translate evdev input codes into XTEST fake input codes. basically the numbers are
+			// somewhat different.
 			fakeInput := evdevtoxtesttranslator.Translate(e, logl)
 
+			// some evdev events we just ignore or don't have a meaningful XTEST fake input for
 			if fakeInput == nil {
 				break
 			}
@@ -61,7 +70,8 @@ func deliverInputEventsToX(
 			// "mouse wheel scrolls down fast" => we don't have a way to do that with XTEST so we
 			// translate that to many single events like "scroll down, scroll down, ..."
 			for i := 0; i < fakeInput.Repeat(); i++ {
-				// TODO: check error?
+				// TODO: check error, while still not adding to latency? how does sync/async stuff
+				//       work with X11 / xgb library?
 				xtest.FakeInput(xConn, fakeInput.Type, fakeInput.Detail, 0, rootWin, fakeInput.MotionNotifyX, fakeInput.MotionNotifyY, 0)
 
 				// some (rare) events like mouse "scroll down" comes from evdev as a single event, but
