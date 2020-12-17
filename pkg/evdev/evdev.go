@@ -98,6 +98,7 @@ func readOneInputEvent(inputDevice *os.File) (*InputEvent, error) {
 }
 
 func grabExclusiveInputDeviceAccess(inputDevice *os.File) error {
+	// 1 for grab, 0 for un-grab
 	if err := unix.IoctlSetInt(int(inputDevice.Fd()), EVIOCGRAB, 1); err != nil {
 		return fmt.Errorf("grabExclusiveInputDeviceAccess: IOCTL(EVIOCGRAB): %w", err)
 	}

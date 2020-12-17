@@ -1,8 +1,8 @@
 ![Build status](https://github.com/function61/screen-server/workflows/Build/badge.svg)
 [![Download](https://img.shields.io/docker/pulls/fn61/screen-server.svg?style=for-the-badge)](https://hub.docker.com/r/fn61/screen-server/)
 
-Minimal VNC-servable desktop environment with a web browser running in an Alpine Linux
-Docker container, for displaying a webpage on an untrusted device (like an old Android tablet).
+Minimal VNC-servable desktop environment with Firefox in a Docker container, for displaying web
+content on untrusted devices (like an old Android tablet).
 
 Nice added benefit is that you can connect to the same screen simultaneously from other
 devices like PCs as well, and if scripting is needed (show content X on screen Y), it's
@@ -24,6 +24,12 @@ Because they're untrusted, I:
 - put it in a guest Wifi network (with no access to my LAN)
 - configured firewall to not let the tablet in the internet, but only access to VNC port
   in my LAN
+
+
+Which VNC app for Android
+-------------------------
+
+There's plenty to choose from, but they're not all equal. I've had success with bVNC.
 
 (Pro-tip: one of my tablets was so old (Android 4.2) that it didn't even support
 [RealVNC's current Android package](https://play.google.com/store/apps/details?id=com.realvnc.viewer.android).
@@ -53,8 +59,11 @@ $ docker run -d \
 	fn61/screen-server:TAG
 ```
 
-The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,<screen name>`
+The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,<screen name>,[<input device>]`
 (web UI shows this, some VNC clients show this)
+
+You can optionally add **physical input devices** like a keyboard-mouse to a screen. There's a
+separate README section for it.
 
 If you have more than one screen, just add `SCREEN_2` and so on..
 
@@ -78,7 +87,21 @@ It shows you the preview of what's on all the screens.
 
 ![](docs/web-ui.png)
 
-TODO: maybe add [noVNC](https://github.com/novnc/noVNC).
+
+Map keyboard/mouse inside the container
+---------------------------------------
+
+TODO: improve these instructions
+
+See [accompanying blog post](https://joonas.fi/2020/12/attach-a-keyboard-to-a-docker-container/)
+
+You need to add the `evdev` device file to Docker run `--device` argument. The blog post explains more.
+
+### Troubleshooting
+
+If you run into problems, `$ cat` the input device from inside the container to test it works.
+The blog post also explains this.
+
 
 
 Sending OSD notifications
@@ -99,6 +122,15 @@ be to show the notification as a full-screen webpage (so we get CSS animations e
 that's still TODO.
 
 ![](docs/osd-notification.png)
+
+
+Roadmap
+-------
+
+- Add [noVNC](https://github.com/novnc/noVNC)
+- Go back to Alpine Linux. It shaved off a large amount of disk space, but Widevine (= DRM) didn't
+  work in Alpine's Firefox (due to glibc incompatibility I think), and thus I couldn't get Spotify
+  web player to work.
 
 
 Credits

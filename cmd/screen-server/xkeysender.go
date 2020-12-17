@@ -128,7 +128,7 @@ func deliverInputEventsToX(
 			// -1 = little down
 			// -2 = more down
 			// ...
-			scrollAmount, up := func() (int32, bool) {
+			scrollAmount, up := func() (int32, bool) { // decompose to absolute & direction
 				if e.Value < 0 {
 					return -e.Value, false
 				} else {
