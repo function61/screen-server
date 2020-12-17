@@ -248,7 +248,9 @@ func runOneScreen(
 		)
 		x11vnc.SysProcAttr = runAsUserAndGroup
 
-		// x11vnc.Stderr = os.Stderr
+		if os.Getenv("DEBUG") != "" {
+			x11vnc.Stderr = os.Stderr
+		}
 
 		return x11vnc.Run()
 	})
