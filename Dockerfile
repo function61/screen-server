@@ -6,6 +6,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 	openbox \
 	xfce4-terminal \
 	dbus \
+	curl \
 	ca-certificates \
 	firefox
 
