@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -77,6 +78,13 @@ func (s *Screen) Homedir() string {
 
 func (s *Screen) XScreenNumberWithColon() string {
 	return fmt.Sprintf(":%d", s.XScreenNumber)
+}
+
+func (s *Screen) VncWebsocketPath() string {
+	websocketPath := fmt.Sprintf("/api/screen/%d/ws", s.Id)
+
+	// for some reason the path doesn't start with '/'
+	return url.QueryEscape(websocketPath[1:])
 }
 
 func run(ctx context.Context, logger *log.Logger) error {

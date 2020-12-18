@@ -35,7 +35,9 @@ var ui, _ = template.New("_").Parse(`<!doctype html>
 {{range .}}
 <h3>{{.Opts.Description}}</h3>
 
-<img src="/api/screen/{{.Id}}/screenshot" alt="Screenshot from screen" style="width: 30%;" />
+<a href="/static/vnc/?path={{.VncWebsocketPath}}&autoconnect=1">
+	<img src="/api/screen/{{.Id}}/screenshot" alt="Screenshot from screen" style="width: 30%;" />
+</a>
 
 <hr />
 {{end}}
@@ -48,6 +50,9 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 	logl := logex.Levels(logger)
 
 	routes := mux.NewRouter()
+
+	// serves VNC client etc.
+	routes.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./www"))))
 
 	routes.HandleFunc("/api/screen/{id}/ws", func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(mux.Vars(r)["id"])

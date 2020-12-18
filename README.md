@@ -43,7 +43,7 @@ What's special about this image
 - Supports multiple screens (ran as separate users) with different resolutions
 - OSD notifications, OSD API for sending messages to screens over the network
 - Web UI w/ screen previews
-- Image size, 330 MB, is small (for an image with a desktop environment and a web browser)
+- Image size is small (for an image with a desktop environment and a web browser)
 
 
 How to run
@@ -58,6 +58,8 @@ $ docker run -d \
 	-e "SCREEN_1=5900,800,1280,Galaxy Tab 2" \
 	fn61/screen-server:TAG
 ```
+
+Port 80 is for the web interface, port 5900 is for the example screen's VNC.
 
 The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,<screen name>,[<input device>]`
 
@@ -87,6 +89,10 @@ Web UI
 It shows you the preview of what's on all the screens.
 
 ![](docs/web-ui.png)
+
+You can click on the preview to launch [web-based VNC](https://github.com/novnc/noVNC) session.
+
+Firefox users should read [this pro-tip](https://stackoverflow.com/a/12042843).
 
 
 Map keyboard/mouse inside the container
@@ -128,7 +134,11 @@ that's still TODO.
 Roadmap
 -------
 
-- Add [noVNC](https://github.com/novnc/noVNC)
+- Use standard `$ notify-send` and its DBUS protocol for OSD-notifications. Pick a nice front-end.
+- Instead of supporting multiple screens (and users) inside container, just spin up a container per
+  screen? Better for failure isolation, and you don't have to take all screens down if you want to
+  reconfigure (think: map keyboard) one. Virtual memory etc. should make this not use more memory..
+- Integrate screen-server-client (audio playing extensions, screen on/off API) into this repo
 - Go back to Alpine Linux. It shaved off a large amount of disk space, but Widevine (= DRM) didn't
   work in Alpine's Firefox (due to glibc incompatibility I think), and thus I couldn't get Spotify
   web player to work.
