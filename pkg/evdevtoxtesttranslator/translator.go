@@ -6,9 +6,8 @@ import (
 	"github.com/function61/screen-server/pkg/evdev"
 )
 
+// XTEST consts
 // taken from https://sourcegraph.com/github.com/AdoptOpenJDK/openjdk-jdk11/-/blob/src/java.desktop/unix/classes/sun/awt/X11/XConstants.java#L88
-// see also https://github.com/whot/libevdev/blob/master/include/linux/input-event-codes.h
-// TODO: reference these from somewhere (also fix REL_X, REL_WHEEL etc. referenced from code below)
 const (
 	KeyPress      = 2
 	KeyRelease    = 3
@@ -16,19 +15,14 @@ const (
 	ButtonRelease = 5
 	MotionNotify  = 6
 
-	// KeyPressMask   = 1 << 0
-	// KeyReleaseMask = 1 << 1
+	MotionNotifyAbsolute = 0
+	MotionNotifyRelative = 1
 
 	mouseLeft      = 1
 	mouseMiddle    = 2
 	mouseRight     = 3
 	mouseWheelUp   = 4
 	mouseWheelDown = 5
-)
-
-const (
-	MotionNotifyAbsolute = 0
-	MotionNotifyRelative = 1
 )
 
 type FakeInput struct {
@@ -52,11 +46,10 @@ func (f FakeInput) Repeat() int {
 
 // for some reason these show up as Key events, while mouse scroll and movement are Rel events
 // evdev code => xtest code
-var mouseBtnKeyCodes = map[uint16]byte{
-	// some values listed here https://who-t.blogspot.com/2016/09/understanding-evdev.html
-	272: mouseLeft,
-	273: mouseRight,
-	274: mouseMiddle, // usually scroll click
+var mouseBtnKeyCodes = map[evdev.Btn]byte{
+	evdev.BtnLEFT:   mouseLeft,
+	evdev.BtnRIGHT:  mouseRight,
+	evdev.BtnMIDDLE: mouseMiddle, // usually scroll click
 }
 
 // Translate evdev input event into XTEST fake input
@@ -68,7 +61,7 @@ func Translate(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
 	case evdev.EvKey:
 		// keyboard key codes and mouse button key codes are conceptually in the same group in evdev,
 		// but XTEST treats them differently (keys vs. buttons)
-		if btnXtestCode, isMouseBtnKeyCode := mouseBtnKeyCodes[e.Code]; isMouseBtnKeyCode {
+		if btnXtestCode, isMouseBtnKeyCode := mouseBtnKeyCodes[evdev.Btn(e.Code)]; isMouseBtnKeyCode {
 			return handleButtonEvent(e, btnXtestCode, logl)
 		} else {
 			return handleKeyEvent(e, logl)
@@ -115,15 +108,15 @@ func handleButtonEvent(e evdev.InputEvent, btnXtestCode byte, logl *logex.Levele
 }
 
 func handleRelativePointerMovement(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
-	switch e.Code {
-	case 0: // REL_X
+	switch evdev.Rel(e.Code) {
+	case evdev.RelX:
 		return &FakeInput{Type: MotionNotify, Detail: MotionNotifyRelative, MotionNotifyX: int16(e.Value)}
-	case 1: // REL_Y
+	case evdev.RelY:
 		return &FakeInput{Type: MotionNotify, Detail: MotionNotifyRelative, MotionNotifyY: int16(e.Value)}
-	case 6: // REL_HWHEEL
+	case evdev.RelHWHEEL:
 		logl.Debug.Println("ignoring REL_HWHEEL")
 		return nil
-	case 8: // REL_WHEEL (vertical wheel, "scroll")
+	case evdev.RelWHEEL: // (vertical wheel, "scroll")
 		// 2 = more up
 		// 1 = little up
 		// -1 = little down
@@ -142,7 +135,7 @@ func handleRelativePointerMovement(e evdev.InputEvent, logl *logex.Leveled) *Fak
 		} else {
 			return &FakeInput{Type: ButtonPress, Detail: mouseWheelDown, repeat: scrollAmount, RepeatOnceForType: ButtonRelease}
 		}
-	case 11, 12: // REL_WHEEL_HI_RES, REL_HWHEEL_HI_RES
+	case evdev.RelWHEELHIRES, evdev.RelHWHEELHIRES:
 		// ignore (scroll events seem to be delivered also)
 		return nil
 	default:

@@ -30,43 +30,54 @@ func NewChan() chan InputEvent {
 	return make(chan InputEvent)
 }
 
-// ScanInput() may close the given channel
-func ScanInput(ctx context.Context, inputDevicePath string, ch chan InputEvent) error {
-	return scanInput(ctx, inputDevicePath, ch, false)
+type Device struct {
+	Input  chan InputEvent
+	handle *os.File
+}
+
+func Open(dev string) (*Device, func() error, error) {
+	return OpenWithChan(dev, NewChan())
+}
+
+func OpenWithChan(dev string, ch chan InputEvent) (*Device, func() error, error) {
+	handle, err := os.OpenFile(dev, os.O_RDWR, 0700)
+	if err != nil {
+		return nil, func() error { return nil }, err
+	}
+
+	return &Device{
+		Input:  ch,
+		handle: handle,
+	}, handle.Close, nil
 }
 
 // same as ScanInput() but grabbed means exclusive access (we'll be the only one receiving the events)
 // https://stackoverflow.com/a/1698686
 // https://stackoverflow.com/a/1550320
-func ScanInputGrabbed(ctx context.Context, inputDevicePath string, ch chan InputEvent) error {
-	return scanInput(ctx, inputDevicePath, ch, true)
+func (d *Device) ScanInputGrabbed(ctx context.Context) error {
+	// other programs won't receive input while we have this file handle open
+	if err := grabExclusiveInputDeviceAccess(d.handle); err != nil {
+		return err
+	}
+
+	return d.ScanInput(ctx)
 }
 
-func scanInput(ctx context.Context, inputDevicePath string, ch chan InputEvent, grab bool) error {
-	inputDevice, err := os.Open(inputDevicePath)
-	if err != nil {
-		return err
-	}
-	defer inputDevice.Close()
-
-	// other programs won't receive input while we have this file handle open
-	if err := grabExclusiveInputDeviceAccess(inputDevice); err != nil {
-		return err
-	}
-
+// ScanInput() may close the given channel
+func (d *Device) ScanInput(ctx context.Context) error {
 	readingErrored := make(chan error, 1)
 
 	go func() {
 		for {
-			e, err := readOneInputEvent(inputDevice)
+			e, err := readOneInputEvent(d.handle)
 			if err != nil {
 				readingErrored <- fmt.Errorf("readOneInputEvent: %w", err)
-				close(ch)
+				close(d.Input)
 				break
 			}
 
 			if e != nil {
-				ch <- *e
+				d.Input <- *e
 			}
 		}
 	}()
@@ -82,6 +93,22 @@ func scanInput(ctx context.Context, inputDevicePath string, ch chan InputEvent, 
 			return err
 		}
 	}
+}
+
+func (d *Device) SetLedOn(led Led) error {
+	return d.writeEvent(EvLed, uint16(led), 0x01)
+}
+
+func (d *Device) SetLedOff(led Led) error {
+	return d.writeEvent(EvLed, uint16(led), 0x00)
+}
+
+func (d *Device) writeEvent(evType EventType, code uint16, value int32) error {
+	return binary.Write(d.handle, binary.LittleEndian, &InputEvent{
+		Type:  evType,
+		Code:  code,
+		Value: value,
+	})
 }
 
 func readOneInputEvent(inputDevice *os.File) (*InputEvent, error) {

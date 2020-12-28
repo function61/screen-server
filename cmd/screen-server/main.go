@@ -205,10 +205,18 @@ func runOneScreen(
 		// this channel will receive input from the input device that we'll start scanning
 		input := evdev.NewChan()
 
-		processes.Start("evdev", func(ctx context.Context) error {
-			// grabbed = input will only be processed by us
-			return evdev.ScanInputGrabbed(ctx, screen.Opts.AttachInputDevice, input)
-		})
+		inputDev, inputClose, err := evdev.OpenWithChan(screen.Opts.AttachInputDevice, input)
+		if err != nil {
+			return fmt.Errorf("failed opening input device %s: %w", screen.Opts.AttachInputDevice, err)
+		}
+		defer func() {
+			if err := inputClose(); err != nil {
+				logl.Error.Printf("evdev inputClose: %v", err)
+			}
+		}()
+
+		// grabbed = input will only be processed by us
+		processes.Start("evdev", inputDev.ScanInputGrabbed)
 
 		processes.Start("x11-input-forwarder", func(ctx context.Context) error {
 			<-xvfbReady
