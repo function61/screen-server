@@ -54,6 +54,7 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 	// serves VNC client etc.
 	routes.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./www"))))
 
+	// websocket-to-VNC proxy
 	routes.HandleFunc("/api/screen/{id}/ws", func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(mux.Vars(r)["id"])
 		if err != nil {
