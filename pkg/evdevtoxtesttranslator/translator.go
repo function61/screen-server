@@ -2,8 +2,8 @@
 package evdevtoxtesttranslator
 
 import (
+	"github.com/function61/gokit/app/evdev"
 	"github.com/function61/gokit/log/logex"
-	"github.com/function61/screen-server/pkg/evdev"
 )
 
 // XTEST consts
@@ -46,7 +46,7 @@ func (f FakeInput) Repeat() int {
 
 // for some reason these show up as Key events, while mouse scroll and movement are Rel events
 // evdev code => xtest code
-var mouseBtnKeyCodes = map[evdev.Btn]byte{
+var mouseBtnKeyCodes = map[evdev.KeyOrButton]byte{
 	evdev.BtnLEFT:   mouseLeft,
 	evdev.BtnRIGHT:  mouseRight,
 	evdev.BtnMIDDLE: mouseMiddle, // usually scroll click
@@ -61,7 +61,7 @@ func Translate(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
 	case evdev.EvKey:
 		// keyboard key codes and mouse button key codes are conceptually in the same group in evdev,
 		// but XTEST treats them differently (keys vs. buttons)
-		if btnXtestCode, isMouseBtnKeyCode := mouseBtnKeyCodes[evdev.Btn(e.Code)]; isMouseBtnKeyCode {
+		if btnXtestCode, isMouseBtnKeyCode := mouseBtnKeyCodes[evdev.KeyOrButton(e.Code)]; isMouseBtnKeyCode {
 			return handleButtonEvent(e, btnXtestCode, logl)
 		} else {
 			return handleKeyEvent(e, logl)

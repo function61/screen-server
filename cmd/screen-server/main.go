@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"github.com/BurntSushi/xgbutil"
-	"github.com/function61/gokit/dynversion"
+	"github.com/function61/gokit/app/dynversion"
+	"github.com/function61/gokit/app/evdev"
 	"github.com/function61/gokit/log/logex"
 	"github.com/function61/gokit/os/osutil"
 	"github.com/function61/gokit/sync/taskrunner"
-	"github.com/function61/screen-server/pkg/evdev"
 	"github.com/spf13/cobra"
 )
 
