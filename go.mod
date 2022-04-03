@@ -10,7 +10,6 @@ require (
 	github.com/function61/gokit v0.0.0-20210715140145-f3b952cb0d48
 	github.com/function61/holepunch-server v0.0.0-20200305174733-9c6de8210421
 	github.com/gorilla/mux v1.7.4
-	github.com/gorilla/websocket v1.4.0
+	github.com/gorilla/websocket v1.4.1
 	github.com/spf13/cobra v1.0.0
-	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9
 )

@@ -36,10 +36,6 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZm
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/function61/gokit v0.0.0-20200302141937-14d21ef1b462/go.mod h1:f6JhYQwMbwfAX472K/2A46CKet7BrpugMzuCobtqPQo=
-github.com/function61/gokit v0.0.0-20200608105953-12235c68c38b h1:oSy6OCp5pk+hObohgNR7MT2Yj1A3f61fAuVnT/D0lJE=
-github.com/function61/gokit v0.0.0-20200608105953-12235c68c38b/go.mod h1:qkZftFp+nvc6BitjWRb9GXS4A1tQ2BuASctzscHa9Io=
-github.com/function61/gokit v0.0.0-20201208150714-430c31fdbc6a h1:XIO8k3S6G5N9EhIvTHMM+swMzpicuClpkL2bvHfPN/I=
-github.com/function61/gokit v0.0.0-20201208150714-430c31fdbc6a/go.mod h1:9nT4wyoyrlvYOlvTovXSmUGIx6klsr+cgqkGTw7XNgs=
 github.com/function61/gokit v0.0.0-20210715140145-f3b952cb0d48 h1:pQsjCOG7JhR1XeR1v3cassRnbOCjubcnqhLWSJMZvDA=
 github.com/function61/gokit v0.0.0-20210715140145-f3b952cb0d48/go.mod h1:nfJiV01CxBDMlVDv35jnAACc7vOBFGXlAZRILvTnD0E=
 github.com/function61/holepunch-server v0.0.0-20200305174733-9c6de8210421 h1:8yLWUK7RFUUdOxGZkLonn6ywERn33Uc4BvBJyLERnU0=
@@ -65,8 +61,9 @@ github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/gorilla/mux v1.7.4 h1:VuZ8uybHlWmqV03+zRzdwKL4tUnIp1MAQtp1mIFE1bc=
 github.com/gorilla/mux v1.7.4/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
-github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=
+github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/grpc-ecosystem/go-grpc-middleware v1.0.0/go.mod h1:FiyG127CGDf3tlThmgyCl78X/SZQqEOJBCDaAfeWzPs=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgfV/d3M/q6VIi02HzZEHgUlZvzk=
 github.com/grpc-ecosystem/grpc-gateway v1.9.0/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
