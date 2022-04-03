@@ -1,3 +1,5 @@
+⬆️ For table of contents, click the above icon
+
 ![Build status](https://github.com/function61/screen-server/workflows/Build/badge.svg)
 [![Download](https://img.shields.io/docker/pulls/fn61/screen-server.svg?style=for-the-badge)](https://hub.docker.com/r/fn61/screen-server/)
 
