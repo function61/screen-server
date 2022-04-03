@@ -40,8 +40,9 @@ func (f *zenityOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, me
 //nolint:unused
 type firefoxOsdDriver struct{}
 
+//nolint:unused
 func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, message string) error {
-	html := f.makeHtml(string(message))
+	html := f.makeHtml(message)
 
 	// TODO: this is not concurrency safe at all
 	osdHtmlFilename := "/tmp/osd.html"
@@ -51,6 +52,7 @@ func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, m
 	}
 	defer os.Remove(osdHtmlFilename)
 
+	//nolint:gosec // ok
 	firefox := exec.CommandContext(
 		ctx,
 		"firefox",
@@ -65,6 +67,7 @@ func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, m
 	return firefox.Run()
 }
 
+//nolint:unused
 func (f *firefoxOsdDriver) makeHtml(message string) string {
 	return fmt.Sprintf(`<html>
 <head>

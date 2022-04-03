@@ -147,7 +147,7 @@ func run(ctx context.Context, logger *log.Logger) error {
 	screenTasks.Start("webui", func(ctx context.Context) error {
 		handler := newServerHandler(screens, logex.Prefix("webui", logger))
 
-		return runServer(ctx, handler, logger)
+		return runServer(ctx, handler)
 	})
 
 	return screenTasks.Wait()
@@ -231,6 +231,7 @@ func runOneScreen(
 
 	processes.Start("Xvfb", func(ctx context.Context) error {
 		// this serves as a virtual display
+		//nolint:gosec // ok
 		xvfb := exec.CommandContext(
 			ctx,
 			"Xvfb",
@@ -245,6 +246,7 @@ func runOneScreen(
 		<-xvfbReady
 
 		// this serves the virtual display over VNC
+		//nolint:gosec // ok
 		x11vnc := exec.CommandContext(
 			ctx,
 			"x11vnc",

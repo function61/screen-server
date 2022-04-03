@@ -30,6 +30,7 @@ func createUserIfNotExists(screen *Screen) error {
 	}
 
 	if isAlpine {
+		//nolint:gosec // ok
 		return exec.Command(
 			"adduser",
 			"-G", "alpine",
@@ -38,6 +39,7 @@ func createUserIfNotExists(screen *Screen) error {
 			screen.Username(),
 		).Run()
 	} else {
+		//nolint:gosec // ok
 		return exec.Command(
 			"adduser",
 			"--disabled-password",

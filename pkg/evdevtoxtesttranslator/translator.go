@@ -55,6 +55,7 @@ var mouseBtnKeyCodes = map[evdev.KeyOrButton]byte{
 // Translate evdev input event into XTEST fake input
 // these mappings rely on X11's keyboard layout to be evdev
 func Translate(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
+	//nolint:exhaustive
 	switch e.Type {
 	case evdev.EvSyn: // "transaction boundary" - used to group together related events.
 		return nil // NOOP
@@ -108,6 +109,7 @@ func handleButtonEvent(e evdev.InputEvent, btnXtestCode byte, logl *logex.Levele
 }
 
 func handleRelativePointerMovement(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
+	//nolint:exhaustive
 	switch evdev.Rel(e.Code) {
 	case evdev.RelX:
 		return &FakeInput{Type: MotionNotify, Detail: MotionNotifyRelative, MotionNotifyX: int16(e.Value)}

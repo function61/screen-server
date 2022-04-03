@@ -118,7 +118,7 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 			return
 		}
 
-		go showOsdMessage(context.Background(), screen, string(msg))
+		go showOsdMessage(context.Background(), screen, msg)
 	})
 
 	routes.HandleFunc("/api/screen/{id}/screenshot", func(w http.ResponseWriter, r *http.Request) {
@@ -141,13 +141,13 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 	return routes
 }
 
-func runServer(ctx context.Context, handler http.Handler, logger *log.Logger) error {
+func runServer(ctx context.Context, handler http.Handler) error {
 	srv := &http.Server{
 		Addr:    ":80",
 		Handler: handler,
 	}
 
-	return httputils.CancelableServer(ctx, srv, func() error { return srv.ListenAndServe() })
+	return httputils.CancelableServer(ctx, srv, srv.ListenAndServe)
 }
 
 func logIfError(origin string, err error) {
