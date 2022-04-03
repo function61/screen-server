@@ -2,7 +2,7 @@
 	"for_description_of_this_file_see": "https://github.com/function61/turbobob",
 	"version_major": 1,
 	"project_name": "screen-server",
-	"project_emoji_icon": " 🖥️",
+	"project_emoji_icon": "🖥️",
 	"builders": [
 		{
 			"name": "default",
@@ -10,7 +10,7 @@
 			"mount_destination": "/workspace",
 			"workdir": "/workspace",
 			"commands": {
-				"build": ["bin/build.sh"],
+				"build": ["build-go-project.sh", "--directory=cmd/screen-server/", "--binary-basename=screen-server"],
 				"dev": ["bash"]
 			}
 		}
@@ -21,8 +21,7 @@
 	"docker_images": [
 		{
 			"image": "fn61/screen-server",
-			"dockerfile_path": "Dockerfile",
-			"auth_type": "creds_from_env"
+			"dockerfile_path": "Dockerfile"
 		}
 	]
 }
