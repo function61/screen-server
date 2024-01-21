@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"os/exec"
@@ -191,6 +192,7 @@ func runOneScreen(
 	processes := taskrunner.New(ctx, logger)
 
 	if screen.Opts.AttachInputDevice != "" {
+		/*
 		exists, err := osutil.Exists(screen.Opts.AttachInputDevice)
 		if err != nil {
 			return err
@@ -201,22 +203,53 @@ func runOneScreen(
 				"Input-device-to-attach '%s' doesn't exist",
 				screen.Opts.AttachInputDevice)
 		}
+		*/
 
 		// this channel will receive input from the input device that we'll start scanning
 		input := evdev.NewChan()
 
-		inputDev, inputClose, err := evdev.OpenWithChan(screen.Opts.AttachInputDevice, input)
-		if err != nil {
-			return fmt.Errorf("failed opening input device %s: %w", screen.Opts.AttachInputDevice, err)
-		}
-		defer func() {
-			if err := inputClose(); err != nil {
-				logl.Error.Printf("evdev inputClose: %v", err)
+		/*
+			inputDev, inputClose, err := evdev.OpenWithChan(screen.Opts.AttachInputDevice, input)
+			if err != nil {
+				return fmt.Errorf("failed opening input device %s: %w", screen.Opts.AttachInputDevice, err)
 			}
-		}()
+			defer func() {
+				if err := inputClose(); err != nil {
+					logl.Error.Printf("evdev inputClose: %v", err)
+				}
+			}()
+		*/
 
 		// grabbed = input will only be processed by us
-		processes.Start("evdev", inputDev.ScanInputGrabbed)
+		processes.Start("evdev", func(ctx context.Context) error {
+			packetListener, err := net.ListenPacket("udp", ":6666")
+			if err != nil {
+				return err
+			}
+			defer packetListener.Close()
+
+			go func() {
+				<-ctx.Done()
+				packetListener.Close() // double close intentional
+			}()
+
+			// evdev events are very small & statically sized
+			buffer := make([]byte, 1024)
+
+			for {
+				n, _, err := packetListener.ReadFrom(buffer)
+				if err != nil {
+					return err
+				}
+
+				event, err := evdev.InputEventFromBytes(buffer[:n])
+				if err != nil {
+					return err
+				}
+
+				input <- *event
+			}
+		})
 
 		processes.Start("x11-input-forwarder", func(ctx context.Context) error {
 			<-xvfbReady
@@ -256,6 +289,7 @@ func runOneScreen(
 			"-xkb",     // use XKEYBOARD extension (improved keymapping)
 			"-noxrecord",
 			"-noxfixes",
+			"-multiptr",
 			// "-noxdamage", // TODO: why was this optimization turned off?
 			"-nopw",                             // don't display warning of serving VNC without password
 			"-desktop", screen.Opts.Description, // VNC viewer might show this (TightVNC on Windows does)

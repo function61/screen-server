@@ -13,6 +13,12 @@ easier to achieve things like this on a PC than on a tablet.
 ![](docs/network-drawing.png)
 
 
+Debug magic
+-----------
+
+docker run --rm -it --label=edgerouter.auth=public --label=traefik.frontend.rule=Host:screens.dev.fn61.net --env=SCREEN_1='5900,800,1280,Galaxy Tab 2,yes' --shm-size=512M -p 5900:5900 -p 6666:6666/udp --network=fn61 screen-server
+
+
 Why?
 ----
 

@@ -12,7 +12,14 @@
 			"commands": {
 				"build": ["build-go-project.sh", "--directory=cmd/screen-server/", "--binary-basename=screen-server"],
 				"dev": ["bash"]
-			}
+			},
+			"dev_http_ingress": "80",
+			"dev_ports": ["5909:5909"],
+			"dev_shell_commands": [
+				{ "command": "source dev.env", "important": true },
+				{ "command": "bin/setup-dev.sh", "important": true },
+				{ "command": "rel/screen-server_linux-amd64 run", "important": true }
+			]
 		}
 	],
 	"os_arches": {
