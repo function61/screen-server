@@ -16,12 +16,15 @@
 		}
 	],
 	"os_arches": {
-		"linux-amd64": true
+		"linux-amd64": true,
+		"linux-arm64": true,
+		"linux-arm": true
 	},
 	"docker_images": [
 		{
 			"image": "fn61/screen-server",
-			"dockerfile_path": "Dockerfile"
+			"dockerfile_path": "Dockerfile",
+			"platforms": ["linux/amd64", "linux/arm64", "linux/arm/v7"]
 		}
 	]
 }
