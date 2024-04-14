@@ -1,15 +1,18 @@
 module github.com/function61/screen-server
 
-go 1.14
+go 1.20
 
 require (
 	github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298 // indirect
 	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 // indirect
 	github.com/BurntSushi/xgb v0.0.0-20200324125942-20f126ea2843
 	github.com/BurntSushi/xgbutil v0.0.0-20190907113008-ad855c713046
-	github.com/function61/gokit v0.0.0-20220312130703-5e89d4b6b077
+	github.com/cubewise-code/go-mime v0.0.0-20190322015324-9c5316ef3e8e // indirect
+	github.com/function61/gokit v0.0.0-20240321114127-797a00fcb45f
 	github.com/function61/holepunch-server v0.0.0-20200305174733-9c6de8210421
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.1
-	github.com/spf13/cobra v1.0.0
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/spf13/cobra v1.6.1
+	github.com/spf13/viper v1.4.0 // indirect
 )
