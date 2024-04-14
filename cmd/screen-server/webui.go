@@ -143,8 +143,9 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 
 func runServer(ctx context.Context, handler http.Handler) error {
 	srv := &http.Server{
-		Addr:    ":80",
-		Handler: handler,
+		Addr:              ":80",
+		Handler:           handler,
+		ReadHeaderTimeout: httputils.DefaultReadHeaderTimeout,
 	}
 
 	return httputils.CancelableServer(ctx, srv, srv.ListenAndServe)

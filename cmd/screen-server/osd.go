@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -47,7 +46,7 @@ func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, m
 	// TODO: this is not concurrency safe at all
 	osdHtmlFilename := "/tmp/osd.html"
 
-	if err := ioutil.WriteFile(osdHtmlFilename, []byte(html), 0600); err != nil {
+	if err := os.WriteFile(osdHtmlFilename, []byte(html), 0600); err != nil {
 		return err
 	}
 	defer os.Remove(osdHtmlFilename)
