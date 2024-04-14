@@ -1,5 +1,9 @@
 FROM ubuntu:latest
 
+# can't have default values here, otherwise they'd overwrite the buildx-supplied ones
+ARG TARGETOS
+ARG TARGETARCH
+
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 	xvfb \
 	x11vnc \
@@ -36,4 +40,4 @@ ADD misc/menu.xml /etc/xdg/openbox/
 
 CMD ["/usr/local/bin/screen-server", "run"]
 
-ADD rel/screen-server_linux-amd64 /usr/local/bin/screen-server
+ADD rel/screen-server_linux-$TARGETARCH /usr/local/bin/screen-server
