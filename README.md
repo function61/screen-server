@@ -61,6 +61,9 @@ $ docker run -d \
 	fn61/screen-server:TAG
 ```
 
+> [!NOTE]  
+> if you get openbox error or error launching Firefox check the troubleshooting section in this README.
+
 Port 80 is for the web interface, port 5900 is for the example screen's VNC.
 
 The format for the `SCREEN_n` parameter is `<VNC port>,<display width>,<height>,<screen name>,[<input device>]`
@@ -144,6 +147,13 @@ Roadmap
 - Go back to Alpine Linux. It shaved off a large amount of disk space, but Widevine (= DRM) didn't
   work in Alpine's Firefox (due to glibc incompatibility I think), and thus I couldn't get Spotify
   web player to work.
+
+Troubleshooting
+---------------
+
+### openbox error or error launching Firefox
+
+you may need to add [`--security-opt` arg](https://github.com/function61/screen-server/issues/8#issuecomment-2058301288)
 
 
 Credits
