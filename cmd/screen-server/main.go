@@ -281,8 +281,8 @@ func runOneScreen(
 		openbox := exec.CommandContext(ctx, "openbox")
 		openbox.SysProcAttr = runAsUserAndGroup
 		openbox.Env = append(
-			openbox.Env,
-			"HOME="+screen.Homedir(),
+			os.Environ(),             // make sure possible TZ gets passed
+			"HOME="+screen.Homedir(), // override HOME=/root
 			"DISPLAY="+screen.XScreenNumberWithColon(),
 			"USER="+screen.Username())
 
