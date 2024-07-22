@@ -51,4 +51,6 @@ CMD ["/usr/local/bin/screen-server", "run"]
 
 ADD rel/screen-server_linux-$TARGETARCH /usr/local/bin/screen-server
 
+ADD misc/user.js /usr/lib/firefox/browser/defaults/preferences/user.js
+
 USER ubuntu
