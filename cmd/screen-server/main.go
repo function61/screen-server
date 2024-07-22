@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/BurntSushi/xgbutil"
@@ -67,17 +66,8 @@ type Screen struct {
 	xUtilConnMu   sync.Mutex
 }
 
-// each screen runs as its own user
-func (s *Screen) Username() string {
-	return fmt.Sprintf("user%d", s.XScreenNumber)
-}
-
-func (s *Screen) Homedir() string {
-	return fmt.Sprintf("/home/%s", s.Username())
-}
-
 func (s *Screen) XScreenNumberWithColon() string {
-	return fmt.Sprintf(":%d", s.XScreenNumber)
+	return ":0"
 }
 
 func (s *Screen) VncWebsocketPath() string {
@@ -120,11 +110,11 @@ func run(ctx context.Context, logger *log.Logger) error {
 			Osd:           osdDriver,
 		}
 
-		if err := createUserIfNotExists(screen); err != nil {
-			return fmt.Errorf("createUserIfNotExists:%w", err)
-		}
-
 		screens = append(screens, screen)
+	}
+
+	if screens := len(screens); screens != 1 {
+		return fmt.Errorf("expected exactly one screen; got %d", screens)
 	}
 
 	// each screen task encapsulates three processes: Xvfb, x11vnc and openbox
@@ -135,14 +125,11 @@ func run(ctx context.Context, logger *log.Logger) error {
 			"Define at least one screen (configuration error)\nInstructions: %s",
 			instructionsUrl)
 	}
+	screen := screens[0]
 
-	for _, screen := range screens {
-		screen := screen // pin
-
-		screenTasks.Start(screen.Opts.Description, func(ctx context.Context) error {
-			return runOneScreen(ctx, screen, logl, logger)
-		})
-	}
+	screenTasks.Start(screen.Opts.Description, func(ctx context.Context) error {
+		return runOneScreen(ctx, screen, logl, logger)
+	})
 
 	screenTasks.Start("webui", func(ctx context.Context) error {
 		handler := newServerHandler(screens, logex.Prefix("webui", logger))
@@ -159,26 +146,6 @@ func runOneScreen(
 	logl *logex.Leveled,
 	logger *log.Logger,
 ) error {
-	// need to run different screens as separate users. it's not only good for security to
-	// keep them separate, but also apps like Firefox don't act nice when same user in two
-	// different display sessions try to run it (Firefox by default tries to run new tab
-	// if user already has Firefox process running)..
-	//
-	// why not just run separate containers then? sure you could, but if you have multiple
-	// screens, you then have many different server endpoints when you want to send OSD
-	// notifications or script things.
-	//
-	// 1000 = user1, 1001 = user2, .. (TODO: it's dirty to rely on this..)
-	uid := 1000 + screen.XScreenNumber - 1
-	gid := 1000 // alpine
-
-	runAsUserAndGroup := &syscall.SysProcAttr{
-		Credential: &syscall.Credential{
-			Uid: uint32(uid),
-			Gid: uint32(gid),
-		},
-	}
-
 	xvfbReady := make(chan struct{})
 
 	go func() {
@@ -237,7 +204,6 @@ func runOneScreen(
 			"Xvfb",
 			screen.XScreenNumberWithColon(),
 			"-screen", "0", fmt.Sprintf("%dx%dx24", screen.Opts.width, screen.Opts.height))
-		xvfb.SysProcAttr = runAsUserAndGroup
 
 		return xvfb.Run()
 	})
@@ -264,7 +230,6 @@ func runOneScreen(
 			"-permitfiletransfer",
 			"-tightfilexfer",
 		)
-		x11vnc.SysProcAttr = runAsUserAndGroup
 
 		if os.Getenv("DEBUG") != "" {
 			x11vnc.Stderr = os.Stderr
@@ -279,12 +244,9 @@ func runOneScreen(
 		// this serves as a window manager so the screen has a menu where the user can start
 		// Firefox and a terminal
 		openbox := exec.CommandContext(ctx, "openbox", "--startup", "firefox")
-		openbox.SysProcAttr = runAsUserAndGroup
 		openbox.Env = append(
-			os.Environ(),             // make sure possible TZ gets passed
-			"HOME="+screen.Homedir(), // override HOME=/root
-			"DISPLAY="+screen.XScreenNumberWithColon(),
-			"USER="+screen.Username())
+			os.Environ(), // make sure possible TZ gets passed
+			"DISPLAY="+screen.XScreenNumberWithColon())
 
 		if os.Getenv("DEBUG") != "" {
 			openbox.Stdout = os.Stdout

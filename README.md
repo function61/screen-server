@@ -162,3 +162,9 @@ Credits
 I learned how to plug Xvfb, x11vnc, Openbox together from
 [danielguerra69/alpine-vnc](https://github.com/danielguerra69/alpine-vnc). I added Firefox,
 process management in Go (instead of Python), multi-screen support, OSD etc.
+
+
+Links
+-----
+
+- Similar but for Wayland: [bbusse/swayvnc-firefox](https://github.com/bbusse/swayvnc-firefox)

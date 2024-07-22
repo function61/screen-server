@@ -50,3 +50,5 @@ RUN sed -i '/<applications>/a\
 CMD ["/usr/local/bin/screen-server", "run"]
 
 ADD rel/screen-server_linux-$TARGETARCH /usr/local/bin/screen-server
+
+USER ubuntu
