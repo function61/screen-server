@@ -278,7 +278,7 @@ func runOneScreen(
 
 		// this serves as a window manager so the screen has a menu where the user can start
 		// Firefox and a terminal
-		openbox := exec.CommandContext(ctx, "openbox")
+		openbox := exec.CommandContext(ctx, "openbox", "--startup", "firefox")
 		openbox.SysProcAttr = runAsUserAndGroup
 		openbox.Env = append(
 			os.Environ(),             // make sure possible TZ gets passed
