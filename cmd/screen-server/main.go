@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -241,9 +242,13 @@ func runOneScreen(
 	processes.Start("openbox", func(ctx context.Context) error {
 		<-xvfbReady
 
+		// when window manager starts up, start this program automatically
+		startupCmd := browserStartupCmd(os.Getenv("START_PAGE"))
+
 		// this serves as a window manager so the screen has a menu where the user can start
 		// Firefox and a terminal
-		openbox := exec.CommandContext(ctx, "openbox", "--startup", "firefox")
+		//nolint:gosec // ok
+		openbox := exec.CommandContext(ctx, "openbox", "--startup", strings.Join(startupCmd, " "))
 		openbox.Env = append(
 			os.Environ(), // make sure possible TZ gets passed
 			"DISPLAY="+screen.XScreenNumberWithColon())
@@ -289,4 +294,14 @@ func parseScreenOpts(serialized string) (*screenOptions, error) {
 		Description:       screenDefParts[4],
 		AttachInputDevice: screenDefParts[5],
 	}, nil
+}
+
+func browserStartupCmd(startPage string) []string {
+	const browserCmd = "firefox"
+
+	if startPage != "" {
+		return []string{browserCmd, startPage}
+	} else {
+		return []string{browserCmd}
+	}
 }
