@@ -286,6 +286,11 @@ func runOneScreen(
 			"DISPLAY="+screen.XScreenNumberWithColon(),
 			"USER="+screen.Username())
 
+		if os.Getenv("DEBUG") != "" {
+			openbox.Stdout = os.Stdout
+			openbox.Stderr = os.Stderr
+		}
+
 		return openbox.Run()
 	})
 
