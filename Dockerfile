@@ -38,6 +38,15 @@ RUN mkdir -p www/vnc \
 
 ADD misc/menu.xml /etc/xdg/openbox/
 
+# the openbox config file (rc.xml) is a file that pretty much has to list all behaviour of openbox,
+# so instead of having our one config there it is around 1 000 lines so the least bad way for us to
+# make Firefox maximized is to add the application rule via search-and-replace (and not e.g. copy snapshot
+# of the config file and add our change in there) in order to get future updates to that important file.
+RUN sed -i '/<applications>/a\
+    <application class="firefox">\
+        <maximized>true</maximized>\
+    </application>' /etc/xdg/openbox/rc.xml
+
 CMD ["/usr/local/bin/screen-server", "run"]
 
 ADD rel/screen-server_linux-$TARGETARCH /usr/local/bin/screen-server
