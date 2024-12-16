@@ -8,3 +8,7 @@ pref('browser.aboutConfig.showWarning', false);
 pref('datareporting.policy.firstRunURL', '');
 
 pref('browser.ctrlTab.recentlyUsedOrder', false);
+
+// dark mode
+// https://superuser.com/a/1694944
+pref('layout.css.prefers-color-scheme.content-override', 0);
