@@ -9,6 +9,9 @@ pref('datareporting.policy.firstRunURL', '');
 
 pref('browser.ctrlTab.recentlyUsedOrder', false);
 
+// send less data to Mozilla
+pref('app.shield.optoutstudies.enabled', false);
+
 // dark mode
 // https://superuser.com/a/1694944
 pref('layout.css.prefers-color-scheme.content-override', 0);
