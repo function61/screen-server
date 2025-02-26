@@ -15,3 +15,6 @@ pref('app.shield.optoutstudies.enabled', false);
 // dark mode
 // https://superuser.com/a/1694944
 pref('layout.css.prefers-color-scheme.content-override', 0);
+
+// rid of the "speech synthesis library not available" nag
+pref('media.webspeech.synth.dont_notify_on_error', true);
