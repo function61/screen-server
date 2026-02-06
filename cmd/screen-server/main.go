@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/url"
 	"os"
 	"os/exec"
@@ -15,39 +15,32 @@ import (
 	"time"
 
 	"github.com/BurntSushi/xgbutil"
-	"github.com/function61/gokit/app/dynversion"
+	"github.com/function61/gokit/app/cli"
 	"github.com/function61/gokit/app/evdev"
-	"github.com/function61/gokit/log/logex"
 	"github.com/function61/gokit/os/osutil"
 	"github.com/function61/gokit/sync/taskrunner"
 	"github.com/spf13/cobra"
 )
 
 const (
-	instructionsUrl = "https://github.com/function61/screen-server"
+	instructionsURL = "https://github.com/function61/screen-server"
 )
 
 func main() {
 	app := &cobra.Command{
-		Use:     os.Args[0],
-		Short:   "Serves your screens.",
-		Version: dynversion.Version,
+		Short: "Serves your screens.",
 	}
 
 	app.AddCommand(&cobra.Command{
 		Use:   "run",
 		Short: "Runs the server",
 		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			rootLogger := logex.StandardLogger()
-
-			osutil.ExitIfError(run(
-				osutil.CancelOnInterruptOrTerminate(rootLogger),
-				rootLogger))
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return run(cmd.Context())
 		},
 	})
 
-	osutil.ExitIfError(app.Execute())
+	cli.Execute(app)
 }
 
 type screenOptions struct {
@@ -59,7 +52,7 @@ type screenOptions struct {
 }
 
 type Screen struct {
-	Id            int
+	ID            int
 	XScreenNumber int
 	Opts          screenOptions
 	Osd           OsdDriver
@@ -72,15 +65,13 @@ func (s *Screen) XScreenNumberWithColon() string {
 }
 
 func (s *Screen) VncWebsocketPath() string {
-	websocketPath := fmt.Sprintf("/api/screen/%d/ws", s.Id)
+	websocketPath := fmt.Sprintf("/api/screen/%d/ws", s.ID)
 
 	// for some reason the path doesn't start with '/'
 	return url.QueryEscape(websocketPath[1:])
 }
 
-func run(ctx context.Context, logger *log.Logger) error {
-	logl := logex.Levels(logger)
-
+func run(ctx context.Context) error {
 	optss := []screenOptions{}
 
 	for i := 1; ; i++ {
@@ -105,7 +96,7 @@ func run(ctx context.Context, logger *log.Logger) error {
 	screens := []*Screen{}
 	for idx, opts := range optss {
 		screen := &Screen{
-			Id:            idx + 1, // 1,2,3...
+			ID:            idx + 1, // 1,2,3...
 			XScreenNumber: idx + 1, // 1,2,3...
 			Opts:          opts,
 			Osd:           osdDriver,
@@ -119,21 +110,19 @@ func run(ctx context.Context, logger *log.Logger) error {
 	}
 
 	// each screen task encapsulates three processes: Xvfb, x11vnc and openbox
-	screenTasks := taskrunner.New(ctx, logger)
+	screenTasks := taskrunner.New(ctx, slog.Default())
 
 	if len(screens) == 0 {
-		return fmt.Errorf(
-			"Define at least one screen (configuration error)\nInstructions: %s",
-			instructionsUrl)
+		return fmt.Errorf("define at least one screen (configuration error)\nInstructions: %s", instructionsURL)
 	}
 	screen := screens[0]
 
 	screenTasks.Start(screen.Opts.Description, func(ctx context.Context) error {
-		return runOneScreen(ctx, screen, logl, logger)
+		return runOneScreen(ctx, screen, slog.Default())
 	})
 
 	screenTasks.Start("webui", func(ctx context.Context) error {
-		handler := newServerHandler(screens, logex.Prefix("webui", logger))
+		handler := newServerHandler(screens, slog.With("subsys", "webui"))
 
 		return runServer(ctx, handler)
 	})
@@ -144,8 +133,7 @@ func run(ctx context.Context, logger *log.Logger) error {
 func runOneScreen(
 	ctx context.Context,
 	screen *Screen,
-	logl *logex.Leveled,
-	logger *log.Logger,
+	logger *slog.Logger,
 ) error {
 	xvfbReady := make(chan struct{})
 
@@ -165,9 +153,7 @@ func runOneScreen(
 		}
 
 		if !exists {
-			return fmt.Errorf(
-				"Input-device-to-attach '%s' doesn't exist",
-				screen.Opts.AttachInputDevice)
+			return fmt.Errorf("input-device-to-attach '%s' doesn't exist", screen.Opts.AttachInputDevice)
 		}
 
 		// this channel will receive input from the input device that we'll start scanning
@@ -179,7 +165,7 @@ func runOneScreen(
 		}
 		defer func() {
 			if err := inputClose(); err != nil {
-				logl.Error.Printf("evdev inputClose: %v", err)
+				logger.Error("evdev inputClose", "err", err)
 			}
 		}()
 
@@ -189,11 +175,7 @@ func runOneScreen(
 		processes.Start("x11-input-forwarder", func(ctx context.Context) error {
 			<-xvfbReady
 
-			return deliverInputEventsToX(
-				ctx,
-				input,
-				screen.XScreenNumberWithColon(),
-				logex.Prefix("x11-input-forwarder", logger))
+			return deliverInputEventsToX(ctx, input, screen.XScreenNumberWithColon(), logger.With("subsys", "x11-input-forwarder"))
 		})
 	}
 

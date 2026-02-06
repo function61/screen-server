@@ -4,12 +4,12 @@ import (
 	"context"
 	"html/template"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"strconv"
 
 	"github.com/function61/gokit/io/bidipipe"
-	"github.com/function61/gokit/log/logex"
 	"github.com/function61/gokit/net/http/httputils"
 	"github.com/function61/holepunch-server/pkg/wsconnadapter"
 	"github.com/gorilla/mux"
@@ -46,9 +46,7 @@ var ui, _ = template.New("_").Parse(`<!doctype html>
 </html>
 `)
 
-func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
-	logl := logex.Levels(logger)
-
+func newServerHandler(screens []*Screen, logger *slog.Logger) http.Handler {
 	routes := mux.NewRouter()
 
 	// serves VNC client etc.
@@ -62,7 +60,7 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 			return
 		}
 
-		screen := screenById(id, screens)
+		screen := screenByID(id, screens)
 		if screen == nil {
 			http.NotFound(w, r)
 			return
@@ -71,7 +69,7 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 		// internally also checks for 'Upgrade: websocket' header
 		clientWs, err := websocketUpgrader.Upgrade(w, r, nil)
 		if err != nil {
-			logl.Error.Printf("failure upgrading: %s", err.Error())
+			logger.Error("failure upgrading", "err", err)
 			// "If the upgrade fails, then Upgrade replies to the client with an HTTP error response. "
 			return
 		}
@@ -82,13 +80,13 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 
 		vncServer, err := net.Dial("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(screen.Opts.vncPort)))
 		if err != nil {
-			logl.Error.Printf("proxy dial to screen: %v", err)
+			logger.Error("proxy dial to screen", "err", err)
 			// can't reply error to client, because we're raw sockets now
 			return
 		}
 
 		if err := bidipipe.Pipe(bidipipe.WithName("client", client), bidipipe.WithName("server", vncServer)); err != nil {
-			logl.Error.Printf("bidipipe: %v", err)
+			logger.Error("bidipipe", "err", err)
 			return
 		}
 	})
@@ -106,7 +104,7 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 			return
 		}
 
-		screen := screenById(id, screens)
+		screen := screenByID(id, screens)
 		if screen == nil {
 			http.NotFound(w, r)
 			return
@@ -128,7 +126,7 @@ func newServerHandler(screens []*Screen, logger *log.Logger) http.Handler {
 			return
 		}
 
-		screen := screenById(id, screens)
+		screen := screenByID(id, screens)
 		if screen == nil {
 			http.NotFound(w, r)
 			return
@@ -157,9 +155,9 @@ func logIfError(origin string, err error) {
 	}
 }
 
-func screenById(id int, screens []*Screen) *Screen {
+func screenByID(id int, screens []*Screen) *Screen {
 	for _, screen := range screens {
-		if screen.Id == id {
+		if screen.ID == id {
 			return screen
 		}
 	}

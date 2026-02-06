@@ -2,8 +2,9 @@
 package evdevtoxtesttranslator
 
 import (
+	"log/slog"
+
 	"github.com/function61/gokit/app/evdev"
-	"github.com/function61/gokit/log/logex"
 )
 
 // XTEST consts
@@ -54,7 +55,7 @@ var mouseBtnKeyCodes = map[evdev.KeyOrButton]byte{
 
 // Translate evdev input event into XTEST fake input
 // these mappings rely on X11's keyboard layout to be evdev
-func Translate(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
+func Translate(e evdev.InputEvent, logger *slog.Logger) *FakeInput {
 	//nolint:exhaustive
 	switch e.Type {
 	case evdev.EvSyn: // "transaction boundary" - used to group together related events.
@@ -63,21 +64,21 @@ func Translate(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
 		// keyboard key codes and mouse button key codes are conceptually in the same group in evdev,
 		// but XTEST treats them differently (keys vs. buttons)
 		if btnXtestCode, isMouseBtnKeyCode := mouseBtnKeyCodes[evdev.KeyOrButton(e.Code)]; isMouseBtnKeyCode {
-			return handleButtonEvent(e, btnXtestCode, logl)
+			return handleButtonEvent(e, btnXtestCode, logger)
 		} else {
-			return handleKeyEvent(e, logl)
+			return handleKeyEvent(e, logger)
 		}
 	case evdev.EvRel:
-		return handleRelativePointerMovement(e, logl)
+		return handleRelativePointerMovement(e, logger)
 	case evdev.EvMsc: // miscellaneous - usually used to report raw scancodes
 		return nil // NOOP
 	default:
-		logl.Debug.Printf("unknown InputEvent type: %d", e.Type)
+		logger.Debug("unknown InputEvent", "type", e.Type)
 		return nil
 	}
 }
 
-func handleKeyEvent(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
+func handleKeyEvent(e evdev.InputEvent, logger *slog.Logger) *FakeInput {
 	switch e.Value {
 	case evdev.KeyPress:
 		// +8 because of course https://stackoverflow.com/a/53551666/2176740
@@ -88,12 +89,12 @@ func handleKeyEvent(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
 		// ignore holds (we don't need it in this context)
 		return nil
 	default:
-		logl.Debug.Printf("unknown InputEvent value: %d", e.Value)
+		logger.Debug("unknown InputEvent", "value", e.Value)
 		return nil
 	}
 }
 
-func handleButtonEvent(e evdev.InputEvent, btnXtestCode byte, logl *logex.Leveled) *FakeInput {
+func handleButtonEvent(e evdev.InputEvent, btnXtestCode byte, logger *slog.Logger) *FakeInput {
 	switch e.Value {
 	case evdev.KeyPress:
 		return &FakeInput{Type: ButtonPress, Detail: btnXtestCode}
@@ -103,12 +104,12 @@ func handleButtonEvent(e evdev.InputEvent, btnXtestCode byte, logl *logex.Levele
 		// ignore holds (we don't need it in this context)
 		return nil
 	default:
-		logl.Debug.Printf("unknown InputEvent value: %d", e.Value)
+		logger.Debug("unknown InputEvent", "value", e.Value)
 		return nil
 	}
 }
 
-func handleRelativePointerMovement(e evdev.InputEvent, logl *logex.Leveled) *FakeInput {
+func handleRelativePointerMovement(e evdev.InputEvent, logger *slog.Logger) *FakeInput {
 	//nolint:exhaustive
 	switch evdev.Rel(e.Code) {
 	case evdev.RelX:
@@ -116,7 +117,7 @@ func handleRelativePointerMovement(e evdev.InputEvent, logl *logex.Leveled) *Fak
 	case evdev.RelY:
 		return &FakeInput{Type: MotionNotify, Detail: MotionNotifyRelative, MotionNotifyY: int16(e.Value)}
 	case evdev.RelHWHEEL:
-		logl.Debug.Println("ignoring REL_HWHEEL")
+		logger.Debug("ignoring REL_HWHEEL")
 		return nil
 	case evdev.RelWHEEL: // (vertical wheel, "scroll")
 		// 2 = more up
@@ -141,7 +142,7 @@ func handleRelativePointerMovement(e evdev.InputEvent, logl *logex.Leveled) *Fak
 		// ignore (scroll events seem to be delivered also)
 		return nil
 	default:
-		logl.Error.Printf("unknown code for relative movement: %d", e.Code)
+		logger.Error("unknown code for relative movement", "code", e.Code)
 		return nil
 	}
 }

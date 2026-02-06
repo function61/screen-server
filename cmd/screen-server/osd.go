@@ -41,15 +41,15 @@ type firefoxOsdDriver struct{}
 
 //nolint:unused
 func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, message string) error {
-	html := f.makeHtml(message)
+	html := f.makeHTML(message)
 
 	// TODO: this is not concurrency safe at all
-	osdHtmlFilename := "/tmp/osd.html"
+	osdHTMLFilename := "/tmp/osd.html"
 
-	if err := os.WriteFile(osdHtmlFilename, []byte(html), 0600); err != nil {
+	if err := os.WriteFile(osdHTMLFilename, []byte(html), 0600); err != nil {
 		return err
 	}
-	defer os.Remove(osdHtmlFilename)
+	defer os.Remove(osdHTMLFilename)
 
 	//nolint:gosec // ok
 	firefox := exec.CommandContext(
@@ -59,7 +59,7 @@ func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, m
 		"-p", "default",
 		"-width", strconv.Itoa(screen.Opts.width),
 		"-height", strconv.Itoa(screen.Opts.height),
-		"file://"+osdHtmlFilename,
+		"file://"+osdHTMLFilename,
 	)
 	firefox.Env = append(firefox.Env, "DISPLAY="+screen.XScreenNumberWithColon())
 
@@ -67,7 +67,7 @@ func (f *firefoxOsdDriver) DisplayMessage(ctx context.Context, screen *Screen, m
 }
 
 //nolint:unused
-func (f *firefoxOsdDriver) makeHtml(message string) string {
+func (f *firefoxOsdDriver) makeHTML(message string) string {
 	return fmt.Sprintf(`<html>
 <head>
 	<title></title>

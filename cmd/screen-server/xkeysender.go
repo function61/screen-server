@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xtest"
 	"github.com/BurntSushi/xgbutil"
 	"github.com/BurntSushi/xgbutil/xevent"
 	"github.com/function61/gokit/app/evdev"
-	"github.com/function61/gokit/log/logex"
 	"github.com/function61/screen-server/pkg/evdevtoxtesttranslator"
 )
 
@@ -18,14 +18,12 @@ func deliverInputEventsToX(
 	ctx context.Context,
 	input chan evdev.InputEvent,
 	display string,
-	logger *log.Logger,
+	logger *slog.Logger,
 ) error {
-	logl := logex.Levels(logger)
-
 	// FIXME: not strictly safe/semantic at all if this function is called multiple times
 	// FIXME: due to this we get "A read error is unrecoverable: EOF" that seem to be originating from
 	//        this code, even though it is not. Global state..
-	xgb.Logger = logger
+	xgb.Logger = log.Default()
 
 	// TODO: use screen.getXConn(), but we've to implement centralized per-screen X connection
 	//       teardown logic (+ maybe xevent.Main?) first
@@ -59,7 +57,7 @@ func deliverInputEventsToX(
 
 			// translate evdev input codes into XTEST fake input codes. basically the numbers are
 			// somewhat different.
-			fakeInput := evdevtoxtesttranslator.Translate(e, logl)
+			fakeInput := evdevtoxtesttranslator.Translate(e, logger)
 
 			// some evdev events we just ignore or don't have a meaningful XTEST fake input for
 			if fakeInput == nil {
