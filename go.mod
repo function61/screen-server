@@ -7,7 +7,6 @@ require (
 	github.com/BurntSushi/xgbutil v0.0.0-20190907113008-ad855c713046
 	github.com/function61/gokit v0.0.0-20260109142558-7b125766c662
 	github.com/function61/holepunch-server v0.0.0-20200305174733-9c6de8210421
-	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.1
 	github.com/spf13/cobra v1.6.1
 )

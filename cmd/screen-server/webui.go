@@ -12,7 +12,6 @@ import (
 	"github.com/function61/gokit/io/bidipipe"
 	"github.com/function61/gokit/net/http/httputils"
 	"github.com/function61/holepunch-server/pkg/wsconnadapter"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -47,14 +46,14 @@ var ui, _ = template.New("_").Parse(`<!doctype html>
 `)
 
 func newServerHandler(screens []*Screen, logger *slog.Logger) http.Handler {
-	routes := mux.NewRouter()
+	routes := http.NewServeMux()
 
 	// serves VNC client etc.
-	routes.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./www"))))
+	routes.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./www"))))
 
 	// websocket-to-VNC proxy
 	routes.HandleFunc("/api/screen/{id}/ws", func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, err := strconv.Atoi(r.PathValue("id"))
 		if err != nil {
 			httputils.Error(w, http.StatusBadRequest)
 			return
@@ -98,7 +97,7 @@ func newServerHandler(screens []*Screen, logger *slog.Logger) http.Handler {
 	})
 
 	routes.HandleFunc("/api/screen/{id}/osd/notify", func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, err := strconv.Atoi(r.PathValue("id"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -120,7 +119,7 @@ func newServerHandler(screens []*Screen, logger *slog.Logger) http.Handler {
 	})
 
 	routes.HandleFunc("/api/screen/{id}/screenshot", func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, err := strconv.Atoi(r.PathValue("id"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
